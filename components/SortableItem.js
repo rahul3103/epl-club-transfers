@@ -2,7 +2,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
 import Card from "./Card";
-import Item from "./Item";
 
 const SortableItem = ({ item }) => {
   const {
