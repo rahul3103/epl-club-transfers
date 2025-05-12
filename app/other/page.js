@@ -1,9 +1,5 @@
 "use client";
 
-import Card from "@/components/Card";
-import Droppable from "@/components/Droppable";
-import players from "@/data/players";
-import { arrayMove, insertAtIndex, removeAtIndex } from "@/utils/array";
 import {
   DndContext,
   DragOverlay,
@@ -14,36 +10,19 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 
-function findPlayerByName(name) {
-  return players.find((player) => player.name === name);
-}
-
-function moveBetweenContainers(
-  items,
-  activeContainer,
-  activeIndex,
-  overContainer,
-  overIndex,
-  item
-) {
-  return {
-    ...items,
-    [activeContainer]: removeAtIndex(items[activeContainer], activeIndex),
-    [overContainer]: insertAtIndex(items[overContainer], overIndex, item),
-  };
-}
+import Droppable from "@/components/Droppable";
+import Item from "@/components/Item";
+import { arrayMove, insertAtIndex, removeAtIndex } from "@/utils/array";
 
 function App() {
   const [itemGroups, setItemGroups] = useState({
-    group1: players,
+    group1: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
     group2: [],
     group3: [],
-    group4: [],
   });
-  const [activeItem, setActiveId] = useState(null);
+  const [activeId, setActiveId] = useState(null);
 
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -53,17 +32,7 @@ function App() {
     })
   );
 
-  const ref = useRef(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    ref.current = document.querySelector("#portal");
-    setMounted(true);
-  }, []);
-
-  const handleDragStart = ({ active }) => {
-    setActiveId(active.id);
-  };
+  const handleDragStart = ({ active }) => setActiveId(active.id);
 
   const handleDragCancel = () => setActiveId(null);
 
@@ -76,27 +45,22 @@ function App() {
 
     const activeContainer = active.data.current.sortable.containerId;
     const overContainer = over.data.current?.sortable.containerId || over.id;
+
     if (activeContainer !== overContainer) {
       setItemGroups((itemGroups) => {
-        const activeIndex = itemGroups[activeContainer].findIndex(
-          (item) => item.name === active.id
-        );
+        const activeIndex = active.data.current.sortable.index;
         const overIndex =
           over.id in itemGroups
             ? itemGroups[overContainer].length + 1
-            : itemGroups[activeContainer].findIndex(
-                (item) => item.name === active.id
-              );
-        const item = itemGroups[activeContainer].find(
-          (item) => item.name === active.id
-        );
+            : over.data.current.sortable.index;
+        debugger;
         return moveBetweenContainers(
           itemGroups,
           activeContainer,
           activeIndex,
           overContainer,
           overIndex,
-          item
+          active.id
         );
       });
     }
@@ -111,15 +75,12 @@ function App() {
     if (active.id !== over.id) {
       const activeContainer = active.data.current.sortable.containerId;
       const overContainer = over.data.current?.sortable.containerId || over.id;
-      const activeIndex = itemGroups[activeContainer].findIndex(
-        (item) => item.name === active.id
-      );
+      const activeIndex = active.data.current.sortable.index;
       const overIndex =
         over.id in itemGroups
           ? itemGroups[overContainer].length + 1
-          : itemGroups[overContainer].findIndex(
-              (item) => item.name === over.id
-            );
+          : over.data.current.sortable.index;
+
       setItemGroups((itemGroups) => {
         let newItems;
         if (activeContainer === overContainer) {
@@ -132,23 +93,36 @@ function App() {
             ),
           };
         } else {
-          const item = itemGroups[activeContainer].find(
-            (item) => item.name === active.id
-          );
           newItems = moveBetweenContainers(
             itemGroups,
             activeContainer,
             activeIndex,
             overContainer,
             overIndex,
-            item
+            active.id
           );
         }
+        debugger;
         return newItems;
       });
     }
 
     setActiveId(null);
+  };
+
+  const moveBetweenContainers = (
+    items,
+    activeContainer,
+    activeIndex,
+    overContainer,
+    overIndex,
+    item
+  ) => {
+    return {
+      ...items,
+      [activeContainer]: removeAtIndex(items[activeContainer], activeIndex),
+      [overContainer]: insertAtIndex(items[overContainer], overIndex, item),
+    };
   };
 
   return (
@@ -159,27 +133,19 @@ function App() {
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid min-h-screen grid-cols-3 grid-rows-[auto_1fr] gap-4 p-4 lg:gap-6 lg:p-6">
-        {Object.keys(itemGroups).map((group, index) => (
+      <div className="container">
+        {Object.keys(itemGroups).map((group) => (
           <Droppable
-            index={index}
             id={group}
             items={itemGroups[group]}
-            activeItem={activeItem}
+            activeId={activeId}
             key={group}
           />
         ))}
       </div>
-      {mounted && ref.current
-        ? createPortal(
-            <DragOverlay>
-              {activeItem ? (
-                <Card {...findPlayerByName(activeItem)} dragOverlay />
-              ) : null}
-            </DragOverlay>,
-            document.getElementById("portal")
-          )
-        : null}
+      <DragOverlay>
+        {activeId ? <Item id={activeId} dragOverlay /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }

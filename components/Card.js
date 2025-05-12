@@ -4,7 +4,7 @@ function Card({ name, yearIn, yearOut, avatar, dragOverlay }) {
   const cursor = dragOverlay ? "cursor-grabbing" : "cursor-grab";
   return (
     <div
-      className={`p flex w-fit list-none items-center rounded-lg border border-gray-200 bg-white p-2 shadow  dark:border-gray-700 dark:bg-gray-800 lg:w-full ${cursor}`}
+      className={`p flex list-none items-center rounded-lg border border-gray-200 bg-white p-2 shadow  dark:border-gray-700 dark:bg-gray-800  ${cursor} w-full`}
     >
       <Image
         src={avatar}
@@ -13,7 +13,7 @@ function Card({ name, yearIn, yearOut, avatar, dragOverlay }) {
         height={32}
         className="h-8 w-8 rounded-full shadow-lg"
       />
-      <div className="hidden flex-col lg:flex ">
+      <div className="hidden flex-col lg:flex">
         <h5 className="text-xs font-medium text-gray-900 dark:text-white">
           {name}
         </h5>

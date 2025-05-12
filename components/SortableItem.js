@@ -3,7 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 import Card from "./Card";
 
-const SortableItem = ({ item }) => {
+const SortableItem = ({ item, containerIndex }) => {
   const {
     attributes,
     listeners,
@@ -17,7 +17,7 @@ const SortableItem = ({ item }) => {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
+  const width = containerIndex === 0 ? "lg:w-56" : "lg:w-full";
   const opacity = isDragging ? "opacity-50" : "opacity-100";
   return (
     <li
@@ -25,7 +25,7 @@ const SortableItem = ({ item }) => {
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      className={`${opacity}`}
+      className={`${opacity} ${width} xl:w-56`}
     >
       <Card {...item} />
     </li>
